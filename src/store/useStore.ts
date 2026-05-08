@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { Guest, Table, Assignment } from '../types';
 
 interface AppStore {
@@ -65,6 +64,7 @@ interface AppStore {
 
   // Import/Export/Misc
   importProject: (data: ProjectImport) => void;
+  loadProjectData: (data: ProjectImport) => void;
   autoAssign: () => void;
   clearAll: () => void;
 }
@@ -77,9 +77,7 @@ interface ProjectImport {
   assignments: Assignment[];
 }
 
-export const useStore = create<AppStore>()(
-  persist(
-    (set, get) => ({
+export const useStore = create<AppStore>()((set, get) => ({
       // Initial state
       projectName: 'Wesele 2024',
       projectDate: new Date().toISOString().split('T')[0],
@@ -229,18 +227,15 @@ export const useStore = create<AppStore>()(
           selectedSeat: null,
         }),
 
+      loadProjectData: (data) =>
+        set({
+          projectName: data.projectName,
+          projectDate: data.projectDate,
+          tables: data.tables,
+          guests: data.guests,
+          assignments: data.assignments,
+        }),
+
       clearAll: () =>
         set({ tables: [], guests: [], assignments: [], selectedTableId: null, selectedGuestId: null, selectedSeat: null }),
-    }),
-    {
-      name: 'wedding-planner-v1',
-      partialize: (s) => ({
-        projectName: s.projectName,
-        projectDate: s.projectDate,
-        tables: s.tables,
-        guests: s.guests,
-        assignments: s.assignments,
-      }),
-    }
-  )
-);
+    }));
